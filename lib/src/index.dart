@@ -9,8 +9,8 @@ class Index extends AbstractApi {
   Index(this.indexName, appId, apiKey, this.client)
       : super(appId, apiKey, client);
 
-  Future<dynamic> search(
-      Map<String, dynamic> query, Map<String, dynamic> options) async {
+  Future<dynamic> search(Map<String, dynamic> query,
+      {Map<String, dynamic> options}) async {
     String path = "1/indexes/" + indexName + "/query";
 
     //Uri uri = client.getUri('read', path);
