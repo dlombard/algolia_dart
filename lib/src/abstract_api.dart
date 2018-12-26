@@ -67,26 +67,34 @@ abstract class AbstractApi {
 
   Future<Response> send(String method, String path,
       {Map<String, dynamic> json}) async {
-    Response response;
-    String baseUrl;
-    Options o;
-    if (!path.startsWith("/")) path = "/" + path;
+    List<String> errors = List<String>();
 
-    if (method == 'GET') {
-      baseUrl = algoliaClient.getReadHost().toString();
+    List<Uri> hosts = algoliaClient.hosts['write'];
+    if (method == 'GET') hosts = algoliaClient.hosts['read'];
+    for (Uri host in hosts) {
+      Response response;
+      String baseUrl;
+      Options o;
+
+      if (!path.startsWith("/")) path = "/" + path;
+      baseUrl = host.toString();
       o = new Options(baseUrl: baseUrl, method: method);
-    } else {
-      baseUrl = algoliaClient.getWriteHost().toString();
-      o = new Options(baseUrl: baseUrl, method: method);
-    }
 
-    response = await _client.request(path, data: jsonEncode(json), options: o);
-
-    print(response.data.runtimeType);
-    Map<String, dynamic> body = response.data;
-    if (response.statusCode / 100 == 4) {
-      throw AlgoliaException(body['message'].toString(), response.statusCode);
+      try {
+        response =
+            await _client.request(path, data: jsonEncode(json), options: o);
+        return response;
+      } on DioError catch (dioError) {
+        if (dioError.response != null) {
+          errors.add(
+              AlgoliaNetworkException(dioError.message, data: dioError.response.data)
+                  .toString());
+          continue;
+        }
+        throw AlgoliaNetworkException(dioError.message.toString());
+      }
     }
-    return response;
+    String errorMessage = "All hosts failed: " + errors.toString();
+    throw AlgoliaNetworkException(errorMessage);
   }
 }

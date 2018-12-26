@@ -26,12 +26,14 @@ class AlgoliaCore {
     return defaultHosts;
   }
 
-  Uri getReadHost() {
-    return hosts['read'].first;
+  Uri getReadHost({int n}) {
+    if (n == null) return hosts['read'].first;
+    return hosts['read'].elementAt(n);
   }
 
-  Uri getWriteHost() {
-    return hosts['write'].first;
+  Uri getWriteHost({int n}) {
+    if (n == null) return hosts['write'].first;
+    return hosts['write'].elementAt(n);
   }
 
   Uri getUri(String type, urlPath, {Map<String, dynamic> queryParameters}) {

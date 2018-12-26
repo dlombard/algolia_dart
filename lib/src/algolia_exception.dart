@@ -1,7 +1,15 @@
-class AlgoliaException implements Exception {
+class AlgoliaNetworkException implements Exception {
   final String message;
   final int statusCode;
-  AlgoliaException(this.message, this.statusCode);
+  final dynamic data;
+
+  AlgoliaNetworkException(this.message, {this.statusCode, this.data});
   @override
-  String toString() => '($statusCode): $message';
+  String toString() {
+    String errorMessage = 'ERROR: $message ';
+    if (data != null) {
+      errorMessage += data['message'].toString();
+    }
+    return errorMessage;
+  }
 }
