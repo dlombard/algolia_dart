@@ -9,7 +9,7 @@ class Index extends AbstractApi {
   Index(this.indexName, appId, apiKey, this.client)
       : super(appId, apiKey, client);
 
-  Future<dynamic> search(Map<String, dynamic> query,
+  Future<List<dynamic>> search(Map<String, dynamic> query,
       {Map<String, dynamic> options}) async {
     String path = "1/indexes/" + indexName + "/query";
 
