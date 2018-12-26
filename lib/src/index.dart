@@ -1,6 +1,7 @@
 import 'client.dart';
 import 'dart:core';
 import 'abstract_api.dart';
+import 'package:dio/dio.dart';
 
 class Index extends AbstractApi {
   final String indexName;
@@ -9,16 +10,18 @@ class Index extends AbstractApi {
   Index(this.indexName, appId, apiKey, this.client)
       : super(appId, apiKey, client);
 
-  Future<List<dynamic>> search(Map<String, dynamic> query,
+  Future<Map<String, dynamic>> search(Map<String, dynamic> query,
       {Map<String, dynamic> options}) async {
     String path = "1/indexes/" + indexName + "/query";
 
     //Uri uri = client.getUri('read', path);
 
-    return await postRequest(path, query);
+    Response r = await postRequest(path, query);
+    return r.data;
   }
 
-  Future<dynamic> searchForFacetValues(String facetName, String text,
+  Future<Map<String, dynamic>> searchForFacetValues(
+      String facetName, String text,
       {Map<String, dynamic> query, int maxFacetHits}) async {
     Map<String, dynamic> q = new Map();
     if (query != null) {
@@ -31,11 +34,12 @@ class Index extends AbstractApi {
     }
     q["facetQuery"] = text;
     String path = "1/indexes/" + indexName + "/facets/" + facetName + "/query";
-    //Uri uri = client.getUri('read', path);
-    return await postRequest(path, q);
+    Response r = await postRequest(path, q);
+    return r.data;
   }
 
-  Future<dynamic> browse({Map<String, dynamic> query, String cursor}) async {
+  Future<Map<String, dynamic>> browse(
+      {Map<String, dynamic> query, String cursor}) async {
     Map<String, dynamic> q = new Map();
     if (query != null) {
       Uri u = Uri(queryParameters: query);
@@ -45,35 +49,36 @@ class Index extends AbstractApi {
       q['cursor'] = cursor;
     }
     String path = "1/indexes/" + indexName + "/browse";
-    //Uri uri = client.getUri('read', path);
-    return await postRequest(path, q);
+    Response r = await postRequest(path, q);
+    return r.data;
   }
 
-  Future<dynamic> getObject(String objectId,
+  Future<Map<String, dynamic>> getObject(String objectId,
       {List<String> attributesToRetrieve}) async {
     String path = "1/indexes/" + indexName + "/" + objectId;
     Map<String, dynamic> queryParameters = Map<String, dynamic>();
     if (attributesToRetrieve != null)
       queryParameters.addAll({"attributesToRetrieve": attributesToRetrieve});
     Uri u = Uri(queryParameters: queryParameters, path: path);
-    // Uri uri = client.getUri('read', path, queryParameters: queryParameters);
-    print(u.toString());
-    return await getRequest(u.toString());
+
+    Response r = await getRequest(u.toString());
+    return r.data;
   }
 
-  Future<dynamic> addObject(Map<String, dynamic> object,
+  Future<Map<String, dynamic>> addObject(Map<String, dynamic> object,
       {String objectId}) async {
+    Response r;
     String path = "1/indexes/" + indexName;
     if (objectId != null) {
       path += "/" + objectId;
-      //Uri uri = client.getUri('write', path);
-      return await putRequest(path, object);
+      r = await putRequest(path, object);
+      return r.data;
     }
-    // Uri uri = client.getUri('write', path);
-    return await postRequest(path, object);
+    r = await postRequest(path, object);
+    return r.data;
   }
 
-  Future<dynamic> addObjects(List<Map<String, dynamic>> objects,
+  Future<Map<String, dynamic>> addObjects(List<Map<String, dynamic>> objects,
       {String objectId}) async {
     List<Map<String, dynamic>> array = List();
     for (Map<String, dynamic> obj in objects) {
@@ -84,38 +89,40 @@ class Index extends AbstractApi {
       print(action);
       array.add(action);
     }
-    return await _batch(array);
+    Response r = await _batch(array);
+    return r.data;
   }
 
-  Future<dynamic> deleteObject(String objectId) async {
+  Future<Map<String, dynamic>> deleteObject(String objectId) async {
     String path = "1/indexes/" + indexName + "/" + objectId;
-    //Uri uri = client.getUri('write', path);
-    return await deleteRequest(path);
+    Response r = await deleteRequest(path);
+    return r.data;
   }
 
-  Future<dynamic> deleteBy(Map<String, dynamic> query) async {
+  Future<Map<String, dynamic>> deleteBy(Map<String, dynamic> query) async {
     Map<String, dynamic> q = Map();
 
     Uri u = Uri(queryParameters: query);
     q['params'] = u.query;
 
     String path = "1/indexes/" + indexName + "/deleteByQuery";
-    // Uri uri = client.getUri('write', path);
-    return await postRequest(path, q);
+    Response r = await postRequest(path, q);
+    return r.data;
   }
 
-  Future<dynamic> clearIndex() async {
+  Future<Map<String, dynamic>> clearIndex() async {
     String path = "1/indexes/" + indexName + "/clear";
-    //Uri uri = client.getUri('write', path);
-    return await postRequest(path, null);
+    Response r = await postRequest(path, null);
+    return r.data;
   }
 
-  Future<dynamic> partialUpdateObject(
+  Future<Map<String, dynamic>> partialUpdateObject(
       Map<String, dynamic> partialObject, String objectId,
       {bool createIfNotExists: false}) async {
     String path = "1/indexes/" + indexName + "/" + objectId + "/partial";
-    // Uri uri = client.getUri('write', path);
-    return await postRequest(path, partialObject);
+
+    Response r = await postRequest(path, partialObject);
+    return r.data;
   }
 
   Future<dynamic> _batch(List<Map<String, dynamic>> actions) async {
@@ -125,20 +132,19 @@ class Index extends AbstractApi {
     return await postRequest(path, requests);
   }
 
-  Future<dynamic> getSettings() async {
+  Future<Map<String, dynamic>> getSettings() async {
     String path = "1/indexes" + indexName + "/services";
-    // Uri uri = client.getUri('read', path);
-
-    return await getRequest(path);
+    Response r = await getRequest(path);
+    return r.data;
   }
 
-  Future<dynamic> setSettings(Map<String, dynamic> settings,
+  Future<Map<String, dynamic>> setSettings(Map<String, dynamic> settings,
       {bool forwardToReplicas}) async {
     String path = "1/indexes" + indexName + "/services";
     Map<String, dynamic> queryParameters =
         forwardToReplicas ? {'forwardToReplicas': true} : null;
     Uri uri = client.getUri('write', path, queryParameters: queryParameters);
-    print(uri);
-    return await putRequest(uri.path, settings);
+    Response r = await putRequest(uri.path, settings);
+    return r.data;
   }
 }
