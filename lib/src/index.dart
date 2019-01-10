@@ -78,15 +78,12 @@ class Index extends AbstractApi {
     return r.data;
   }
 
-  Future<Map<String, dynamic>> addObjects(List<Map<String, dynamic>> objects,
+  Future<Map<String, dynamic>> addObjects(List<dynamic> objects,
       {String objectId}) async {
     List<Map<String, dynamic>> array = List();
     for (Map<String, dynamic> obj in objects) {
       Map<String, dynamic> action = Map<String, dynamic>();
       action.addAll({"action": "addObject", "body": obj});
-      //action['action'] = "addObject";
-      //action['body'] = obj;
-      print(action);
       array.add(action);
     }
     Response r = await _batch(array);
